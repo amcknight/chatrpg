@@ -31,8 +31,8 @@ cd ..
 cd ~
 mkdir git
 cd git
-git clone https://github.com/amcknight/gort.git
-cd gort
+git clone https://github.com/amcknight/chatrpg.git
+cd chatrpg
 ```
 
 ### Pipenv

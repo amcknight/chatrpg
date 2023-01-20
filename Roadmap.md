@@ -1,6 +1,7 @@
 Subject to drastic changes
 
 ### Version 0
+- Get it to connect properly
 - Earn XP when mangort is in chat
 
 ### Beyond
