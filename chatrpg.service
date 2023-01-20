@@ -1,0 +1,15 @@
+[Unit]
+Description=Chat RPG service
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=ec2-user
+WorkingDirectory=/home/ec2-user/git/chatgpt
+ExecStartPre=/usr/bin/git pull
+ExecStart=/home/ec2-user/.local/bin/pipenv run bot
+
+[Install]
+WantedBy=multi-user.target
