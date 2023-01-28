@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+import threading
 from random import choice, randrange
 from twitchio.ext import commands
 from twitchio.channel import Channel
@@ -10,9 +11,12 @@ logging.basicConfig(filename='everything.log', level=logging.INFO)
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.0.01'
+        self.v = '0.0.02'
         self.first_message = 'HeyGuys'
         self.active = True
+        self.chatters = []
+        self.xps = {}
+        self.last_time = int(time.time())
 
         name = os.environ['BOT_NICK']
         super().__init__(
@@ -22,6 +26,9 @@ class Bot(commands.Bot):
             prefix='!',
             initial_channels=[os.environ['CHANNEL']]
         )
+
+    def default_channel(self):
+        return self.connected_channels[0]
 
     def is_command(self, content):
         # chr(1) is a Start of Header character that shows up invisibly in /me ACTIONs
@@ -38,6 +45,27 @@ class Bot(commands.Bot):
     async def event_raw_data(self, data):
         logging.info(data)
 
+    async def event_join(self, channel, user):
+        name = user.name.lower()
+        if name == 'mangort':
+            await channel.send('Game on catJAM')
+            self.active = True
+            self.since_last()
+
+        if name not in self.chatters:
+            self.chatters.append(name)
+
+    async def event_part(self, user):
+        name = user.name.lower()
+
+        if name == 'mangort':
+            await self.default_channel().send('Game off')
+            self.since_last()
+            self.active = False
+
+        if name in self.chatters:
+            self.chatters.remove(name)
+
     async def event_message(self, msg):
         'Runs every time a message is sent in chat.'
 
@@ -52,10 +80,18 @@ class Bot(commands.Bot):
 
         if self.is_command(content):
             await self.handle_commands(msg)
-            return
-
-        if self.is_emote_command(content):
+        elif self.is_emote_command(content):
             await self.handle_emote_command(channel, content, author)
+        
+        await self.update_xp()
+            
+    async def update_xp(self):
+        if not self.Active: return
+        since = self.since_last()
+        for c in self.chatters:
+            if c not in self.xps:
+                self.xps[c] = 0  # New chatters get extra XP from this. Maybe that's fine
+            self.xps[c] += since
 
     async def handle_emote_command(self, channel, content, author):
         words = content.split(' ')
@@ -66,16 +102,19 @@ class Bot(commands.Bot):
                 await channel.send(f'/me {author} LUL')
 
     async def event_raw_usernotice(self, channel: Channel, tags: dict):
-        if tags['msg-id'] == 'raid':
+        id = tags['msg-id']
+        if id == 'raid':
             await channel.send(f'!so {tags["display-name"]}')
-        elif tags['msg-id'] in ['sub', 'resub', 'subgift', 'submysterygift']:
+        elif id == 'join':
+            await channel.send(f'YO {tags["display-name"]}')
+        elif id in ['sub', 'resub', 'subgift', 'submysterygift']:
             logging.info("SUB:::")
             logging.info(tags)
             pass # Need to collect groups of gifts into a single message if using this
-        elif tags['msg-id'] == 'host':
+        elif id == 'host':
             logging.info("HOST:::")
             logging.info(tags)
-        elif tags['nsg-id'] == 'announcement':
+        elif id == 'announcement':
             logging.info("ANNOUNCE:::")
             logging.info(tags)
         else:
@@ -84,18 +123,43 @@ class Bot(commands.Bot):
         return await super().event_raw_usernotice(channel, tags)
 
     @commands.command()
+    async def xp(self, ctx):
+        author = ctx.author.name
+        if author in self.xps:
+            await ctx.send(f'{author} has {self.xps[author]} XP')
+        else:
+            await ctx.send(f'{author} is somehow not earning XP, mangort. Fix your chatbots!')
+
+    @commands.command()
     async def version(self, ctx):
         await ctx.send(f'peepoHmm v{self.v}')
 
     @commands.command()
     async def help(self, ctx):
-        await ctx.send("goRtPG commands: https://github.com/amcknight/chatrpg/blob/main/Commands.md")
+        await ctx.send(f"{self.nick} commands: https://github.com/amcknight/chatrpg/blob/main/Commands.md")
 
     async def event_error(self, error):
         print(error)
         logging.error(error)
         await self.connected_channels[0].send("/me :boom: PepeHands there are bugs in my brain, mangort")
 
+    def since_last(self):  
+        now = int(time.time())
+        since = now - self.last_time
+        self.last_time = now
+        return since
+
+    def minutely(self):
+        pass
+
+def periodic(b):
+    while True:
+        time.sleep(60)
+        b.minutely()
+
 
 if __name__ == "__main__":
-    Bot().run()
+    bot = Bot()
+    t = threading.Thread(target=periodic, args=(bot,), daemon=True)
+    t.start()
+    bot.run()

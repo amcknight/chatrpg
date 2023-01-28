@@ -1,9 +1,23 @@
 Subject to drastic changes
 
-### Version 0
-- Get it to connect properly
-- Earn XP when mangort is in chat
+### Version 0.1
+- Earning XP towards Jobs
+- Can switch Jobs
+- Earn levels from XP
+- Persist basic information between service restarts
+
+### Version 0.2
+- Persist raw info for major upgrades to recalculate things
+- Players have HP and other stats
+- Enter and exit locations
+- Players have Items, Equipment, Gold
+
+### Version 0.3
+- Fight enemies based on Location for Drops
+- Trade and Equip Items
+- Buy Items from Home Location
 
 ### Beyond
-- Levels, Enemies, Drops, Locations, etc, etc. A game.
-- Persist basic information for major upgrades to recalculate things
+- Change your Autobattle rules
+- Fight in Groups when in same location
+- See the fights as Browser Source pop-up

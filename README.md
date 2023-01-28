@@ -48,7 +48,7 @@ Set these environment variables. I recommend just creating a file called `.env` 
 
 ```env
 TMI_TOKEN=<TMI TOKEN>
-CLIENT_ID=<CLIENT ID>
+CLIENT_SECRET=<CLIENT SECRET>
 BOT_NICK=<BOT NAME>
 CHANNEL=<TWITCH CHANNEL NAME>
 ```
