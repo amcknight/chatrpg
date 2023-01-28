@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 twitchio = "*"
+redis = "*"
 
 [dev-packages]
 pylint = "*"

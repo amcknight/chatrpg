@@ -1,3 +1,3 @@
 ### Unreleased
 - Connects to a stream
-- Added non-persistent XP per Player
+- Has persistent XP per Player towards their current Job

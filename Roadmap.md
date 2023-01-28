@@ -1,10 +1,8 @@
 Subject to drastic changes
 
 ### Version 0.1
-- Earning XP towards Jobs
 - Can switch Jobs
 - Earn levels from XP
-- Persist basic information between service restarts
 
 ### Version 0.2
 - Persist raw info for major upgrades to recalculate things

@@ -2,6 +2,7 @@ import os
 import time
 import logging
 import threading
+from store import Store
 from random import choice, randrange
 from twitchio.ext import commands
 from twitchio.channel import Channel
@@ -11,12 +12,12 @@ logging.basicConfig(filename='everything.log', level=logging.INFO)
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.0.02'
+        self.v = '0.0.03'
         self.first_message = 'HeyGuys'
         self.active = True
         self.chatters = []
-        self.xps = {}
         self.last_time = int(time.time())
+        self.store = Store()
 
         name = os.environ['BOT_NICK']
         super().__init__(
@@ -78,57 +79,22 @@ class Bot(commands.Bot):
         if author.lower() == self.nick.lower():
             return
 
+        if self.active:
+            self.store.update_xp(self.chatters, self.since_last())
+
         if self.is_command(content):
             await self.handle_commands(msg)
         elif self.is_emote_command(content):
             await self.handle_emote_command(channel, content, author)
-        
-        await self.update_xp()
-            
-    async def update_xp(self):
-        if not self.Active: return
-        since = self.since_last()
-        for c in self.chatters:
-            if c not in self.xps:
-                self.xps[c] = 0  # New chatters get extra XP from this. Maybe that's fine
-            self.xps[c] += since
 
     async def handle_emote_command(self, channel, content, author):
         words = content.split(' ')
-        if (words[0] == 'mangor7Ban'):
-            banned = " ".join(words[1:]).strip()
-            if len(banned) == 0:
-                time.sleep(0.5)
-                await channel.send(f'/me {author} LUL')
-
-    async def event_raw_usernotice(self, channel: Channel, tags: dict):
-        id = tags['msg-id']
-        if id == 'raid':
-            await channel.send(f'!so {tags["display-name"]}')
-        elif id == 'join':
-            await channel.send(f'YO {tags["display-name"]}')
-        elif id in ['sub', 'resub', 'subgift', 'submysterygift']:
-            logging.info("SUB:::")
-            logging.info(tags)
-            pass # Need to collect groups of gifts into a single message if using this
-        elif id == 'host':
-            logging.info("HOST:::")
-            logging.info(tags)
-        elif id == 'announcement':
-            logging.info("ANNOUNCE:::")
-            logging.info(tags)
-        else:
-            logging.info("RAW USER NOTICE:::")
-            logging.info(tags)
-        return await super().event_raw_usernotice(channel, tags)
 
     @commands.command()
     async def xp(self, ctx):
         author = ctx.author.name
-        if author in self.xps:
-            await ctx.send(f'{author} has {self.xps[author]} XP')
-        else:
-            await ctx.send(f'{author} is somehow not earning XP, mangort. Fix your chatbots!')
+        axp = self.store.get_xp(author.lower())
+        await ctx.send(f'{author} has {axp} XP')
 
     @commands.command()
     async def version(self, ctx):

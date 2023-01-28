@@ -25,6 +25,12 @@ sudo make altinstall
 cd ..
 ```
 
+### Redis
+
+```bash
+sudo amazon-linux-extras install redis6
+```
+
 ### Git
 
 ```bash
@@ -65,8 +71,8 @@ In the `chatrpg` directory:
 
 ```bash
 sudo cp chatrpg.service /etc/systemd/system/
-sudo systemctl enable chatrpg
-sudo systemctl start chatrpg
+sudo systemctl enable redis chatrpg
+sudo systemctl restart redis chatrpg
 ```
 
 To upgrade, restart the service or server and it will `git pull` before running `pipenv run bot`.
