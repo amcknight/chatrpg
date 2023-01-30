@@ -4,10 +4,6 @@ def move_xp():
     r = redis.Redis(host='localhost', port=6379, db=0)
     dirty_keys = list( map( lambda k: k.decode(), r.keys("*:xp:b'*'") ) )
     clean_keys = list( map( clean_key, dirty_keys ) )
-    for key in dirty_keys:
-        key_parts = key.split(':')
-        clean_keys.append(':'.join(list( map (clean_key, key_parts))))
-    
     print(f"{dirty_keys, clean_keys}")
 
 # def dirty_key(key):
