@@ -1,3 +1,4 @@
 .env
 everything.log
 dump.rdb
+__pycache__

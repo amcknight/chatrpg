@@ -1,0 +1,22 @@
+<html>
+<head>
+</head>
+<body>
+<div id="content"></div>
+<script>
+    const events_url = {{ url_for("event")|tojson }}
+
+    function process_event(json_event) {
+        document.getElementById("content").innerHTML = json_event;
+    }
+
+    function refresh() {
+        fetch(events_url).then(result => result.text()).then(process_event)
+        setTimeout(refresh, 2000);
+    }
+
+refresh()
+
+</script>
+</body>
+</html>
