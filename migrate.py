@@ -6,24 +6,11 @@ def move_xp():
     clean_keys = list( map( clean_key, dirty_keys ) )
     print(f"{dirty_keys, clean_keys}")
 
-# def dirty_key(key):
-#     key_parts = key.split(':')
-#     if any(map(dirty_key_part, key_parts)):
-#         return True
-#     return False
-
-# def dirty_key_part(key_part):
-#     try:
-#         key_part
-#         return True
-#     except (UnicodeDecodeError, AttributeError):
-#         return False
-
 def clean_key(key):
     key_part = key.split(':')
     key_prefix = ':'.join(key_part[:-1])
-    dirty_part = key[-1]
-    clean_part = str(dirty_part)
+    dirty_part = key_part[-1]
+    clean_part = dirty_part[2:-1]
     return f"{key_prefix}:{clean_part}"
 
 if __name__ == '__main__':
