@@ -29,7 +29,7 @@ class Store:
         job = self.redis.get(job_key)
         if not job:
             self.redis.set(job_key, self.default_job)
-            job = self.default_job
+            return self.default_job
         return job.decode()
 
     def get_level(self, player):
