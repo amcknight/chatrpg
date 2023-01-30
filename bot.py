@@ -7,12 +7,12 @@ from random import choice, randrange
 from twitchio.ext import commands
 from twitchio.channel import Channel
 
-logging.basicConfig(filename='everything.log', level=logging.INFO)
+logging.basicConfig(filename='log.log', level=logging.WARN)
 
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.0.04'
+        self.v = '0.0.05'
         self.first_message = 'HeyGuys'
         self.active = True
         self.chatters = []
@@ -105,8 +105,8 @@ class Bot(commands.Bot):
 
     async def event_error(self, error):
         print(error)
-        logging.error(error)
-        await self.connected_channels[0].send("/me :boom: PepeHands there are bugs in my brain, mangort")
+        logging.error(f"Event Error: {error}")
+        await self.default_channel().send("/me :boom: :bug: mangort")
 
     def since_last(self):  
         now = int(time.time())

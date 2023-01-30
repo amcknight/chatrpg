@@ -18,7 +18,7 @@ class Store:
         xp = self.redis.get(xp_key)
         if not xp:
             self.redis.set(xp_key, 0)
-            xp = 0
+            return 0
         return floor(int(xp)/60)
 
     def get_xp_left(self, player):
