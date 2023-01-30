@@ -1,19 +1,21 @@
 Subject to drastic changes
 
 ### Version 0.1
-- Can switch Jobs
 - Earn levels from XP
 
 ### Version 0.2
-- Persist raw info for major upgrades to recalculate things
-- Players have HP and other stats
+- Pop up browser source for game events
+- Players have stats
+- Locations exist
 - Enter and exit locations
-- Players have Items, Equipment, Gold
 
 ### Version 0.3
-- Fight enemies based on Location for Drops
+- Fight enemies based on Location
+- Heal at Home
 - Trade and Equip Items
 - Buy Items from Home Location
+- Can switch Jobs
+- Players have Items, Equipment, Gold
 
 ### Beyond
 - Change your Autobattle rules

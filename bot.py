@@ -2,6 +2,7 @@ import os
 import time
 import logging
 import threading
+from math import floor
 from store import Store
 from random import choice, randrange
 from twitchio.ext import commands
@@ -12,7 +13,7 @@ logging.basicConfig(filename='everything.log', level=logging.INFO)
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.0.03'
+        self.v = '0.0.04'
         self.first_message = 'HeyGuys'
         self.active = True
         self.chatters = []
@@ -94,7 +95,7 @@ class Bot(commands.Bot):
     async def xp(self, ctx):
         author = ctx.author.name
         axp = self.store.get_xp(author.lower())
-        await ctx.send(f'{author} has {axp} XP')
+        await ctx.send(f'{author} has {floor(axp/60)} XP')
 
     @commands.command()
     async def version(self, ctx):
