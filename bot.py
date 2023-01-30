@@ -2,7 +2,6 @@ import os
 import time
 import logging
 import threading
-from math import floor
 from store import Store
 from random import choice, randrange
 from twitchio.ext import commands
@@ -92,18 +91,17 @@ class Bot(commands.Bot):
         words = content.split(' ')
 
     @commands.command()
-    async def xp(self, ctx):
+    async def me(self, ctx):
         author = ctx.author.name
-        axp = self.store.get_xp(author.lower())
-        await ctx.send(f'{author} has {floor(axp/60)} XP')
+        name = author.lower()
+        job = self.store.get_job(name)
+        lvl = self.store.get_level(name)
+        xp = self.store.get_xp_left(name)
+        await ctx.send(f'{author}: Level {lvl} {job.capitalize()}. Needs {xp} XP')
 
     @commands.command()
     async def version(self, ctx):
-        await ctx.send(f'peepoHmm v{self.v}')
-
-    @commands.command()
-    async def help(self, ctx):
-        await ctx.send(f"{self.nick} commands: https://github.com/amcknight/chatrpg/blob/main/Commands.md")
+        await ctx.send(f'v{self.v}')
 
     async def event_error(self, error):
         print(error)

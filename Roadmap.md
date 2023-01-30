@@ -1,8 +1,5 @@
 Subject to drastic changes
 
-### Version 0.1
-- Earn levels from XP
-
 ### Version 0.2
 - Pop up browser source for game events
 - Players have stats
