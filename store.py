@@ -5,7 +5,15 @@ from math import floor, sqrt
 class Store:
     def __init__(self):
         self.default_job = 'lurker'
+
+    def connect(self):
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
+
+    def connected(self):
+        try:
+            return self.redis and self.redis.ping()
+        except:
+            return False
 
     def update_xp(self, players, dxp):
         for p in players:

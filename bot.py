@@ -12,12 +12,18 @@ logging.basicConfig(filename='log.log', level=logging.WARN)
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.0.05'
+        self.v = '0.1.00'
         self.first_message = 'HeyGuys'
-        self.active = True
-        self.chatters = []
         self.last_time = int(time.time())
+        self.chatters = []
+        self.mangort_here = False
+
         self.store = Store()
+        try:
+            self.store.connect()
+            self.was_connected = True
+        except:
+            self.was_connected = False
 
         name = os.environ['BOT_NICK']
         super().__init__(
@@ -31,17 +37,41 @@ class Bot(commands.Bot):
     def default_channel(self):
         return self.connected_channels[0]
 
+    def since_last(self):  
+        now = int(time.time())
+        since = now - self.last_time
+        self.last_time = now
+        return since
+
+    def update(self):
+        self.store.update_xp(self.chatters, self.since_last())
+    
+    ##### Command Management: #####
+
+    @commands.command()
+    async def me(self, ctx):
+        if not self.store.connected(): return
+        author = ctx.author.name
+        name = author.lower()
+        job = self.store.get_job(name)
+        lvl = self.store.get_level(name)
+        xp = self.store.get_xp_left(name)
+        await ctx.send(f'{author}: Level {lvl} {job.capitalize()}. Needs {xp} XP')
+
+    @commands.command()
+    async def version(self, ctx):
+        await ctx.send(f'v{self.v}')
+
     def is_command(self, content):
         # chr(1) is a Start of Header character that shows up invisibly in /me ACTIONs
         return content[0] in '!/' or content.startswith(chr(1)+'ACTION ')
-
-    def is_emote_command(self, content):
-        return content.startswith('mangor7')
+    
+    ##### Event Management: #####
 
     async def event_ready(self):
         'Called once when the bot goes online.'
         print(f"{self.nick} is online!")
-        await self.connected_channels[0].send(self.first_message) # Need to do this when no context available
+        await self.default_channel().send(self.first_message)
 
     async def event_raw_data(self, data):
         logging.info(data)
@@ -49,9 +79,7 @@ class Bot(commands.Bot):
     async def event_join(self, channel, user):
         name = user.name.lower()
         if name == 'mangort':
-            await channel.send('Game on catJAM')
-            self.active = True
-            self.since_last()
+            await self.mangort_arrived()
 
         if name not in self.chatters:
             self.chatters.append(name)
@@ -60,9 +88,7 @@ class Bot(commands.Bot):
         name = user.name.lower()
 
         if name == 'mangort':
-            await self.default_channel().send('Game off')
-            self.since_last()
-            self.active = False
+            await self.mangort_left()
 
         if name in self.chatters:
             self.chatters.remove(name)
@@ -75,56 +101,58 @@ class Bot(commands.Bot):
 
         channel = msg.channel
         content = msg.content
-        author = msg.author.name
-        if author.lower() == self.nick.lower():
+        name = msg.author.name.lower()
+        if name == self.nick.lower():
             return
 
-        if self.active:
-            self.store.update_xp(self.chatters, self.since_last())
+        if name == 'mangort':
+            await self.mangort_arrived()
+
+        if await self.active():
+            self.update()
 
         if self.is_command(content):
             await self.handle_commands(msg)
-        elif self.is_emote_command(content):
-            await self.handle_emote_command(channel, content, author)
-
-    async def handle_emote_command(self, channel, content, author):
-        words = content.split(' ')
-
-    @commands.command()
-    async def me(self, ctx):
-        author = ctx.author.name
-        name = author.lower()
-        job = self.store.get_job(name)
-        lvl = self.store.get_level(name)
-        xp = self.store.get_xp_left(name)
-        await ctx.send(f'{author}: Level {lvl} {job.capitalize()}. Needs {xp} XP')
-
-    @commands.command()
-    async def version(self, ctx):
-        await ctx.send(f'v{self.v}')
 
     async def event_error(self, error):
         print(error)
         logging.error(f"Event Error: {error}")
         await self.default_channel().send("/me :boom: :bug: mangort")
 
-    def since_last(self):  
-        now = int(time.time())
-        since = now - self.last_time
-        self.last_time = now
-        return since
+    ##### Mangort and Store state management: #####
 
-    def minutely(self):
-        pass
+    async def mangort_arrived(self):
+        if self.mangort_here: return
+        self.since_last()
+        self.mangort_here = True
+        await self.default_channel().send("hi mangort")
 
-def periodic(b):
-    while True:
-        time.sleep(60)
-        b.minutely()
+    async def mangort_left(self):
+        if not self.mangort_here: return
+        if await self.active():
+            self.update()
+        self.chatters = []
+        self.mangort_here = False
+        await self.default_channel().send("bye mangort")
 
+    async def active(self):
+        connected = self.store.connected()
+        await self.check_connection_change(connected)
+        if not connected:
+            try:
+                self.store.connect()
+            except:
+                pass
+        return connected and self.mangort_here
+
+    async def check_connection_change(self, connected):
+        if self.was_connected == connected: return
+        if connected:
+            await self.default_channel().send("/me :disk: :)")
+        else:
+            await self.default_channel().send("/me :disk: :(")
+        self.was_connected = connected
 
 if __name__ == "__main__":
     bot = Bot()
-    t = threading.Thread(target=periodic, args=(bot,), daemon=True)
-    t.start()
     bot.run()
