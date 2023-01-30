@@ -25,7 +25,7 @@ def move_xp():
 
 def clean_key(key):
     key_part = key.split(':')
-    key_prefix = key_part[:-1]
+    key_prefix = ':'.join(key_part[:-1])
     dirty_part = key[-1]
     clean_part = str(dirty_part)
     return f"{key_prefix}:{clean_part}"
