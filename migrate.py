@@ -3,10 +3,10 @@ import redis
 def move_xp():
     r = redis.Redis(host='localhost', port=6379, db=0)
     dirty_keys = list( map( lambda k: k.decode(), r.keys("*:xp:b'*'") ) )
-    clean_keys = []
+    clean_keys = list( map( clean_key, dirty_keys ) )
     for key in dirty_keys:
         key_parts = key.split(':')
-        clean_keys.append(':'.join(list( map (safe_decode, key_parts))))
+        clean_keys.append(':'.join(list( map (clean_key, key_parts))))
     
     print(f"{dirty_keys, clean_keys}")
 
@@ -23,11 +23,12 @@ def move_xp():
 #     except (UnicodeDecodeError, AttributeError):
 #         return False
 
-def safe_decode(bytes_or_str):
-    try:
-        return bytes_or_str.decode()
-    except (UnicodeDecodeError, AttributeError):
-        return bytes_or_str
+def clean_key(key):
+    key_part = key.split(':')
+    key_prefix = key_part[:-1]
+    dirty_part = key[-1]
+    clean_part = str(dirty_part)
+    return f"{key_prefix}:{clean_part}"
 
 if __name__ == '__main__':
     move_xp()
