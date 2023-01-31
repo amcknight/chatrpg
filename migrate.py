@@ -1,5 +1,10 @@
 import redis
 
+def fill_event_queue():
+    r = redis.Redis(host='localhost', port=6379, db=0)
+    es = [1,2] * 10
+    r.rpush('events', *es)
+
 def move_xp():
     r = redis.Redis(host='localhost', port=6379, db=0)
     dirty_keys = list( map( lambda k: k.decode(), r.keys("*:xp:b'*'") ) )
@@ -18,4 +23,5 @@ def clean_key(key):
 
 if __name__ == '__main__':
     pass
+    fill_event_queue()
     #move_xp()

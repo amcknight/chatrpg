@@ -2,17 +2,32 @@
 <head>
 </head>
 <body>
-<div id="content"></div>
+<div id="arena">
+    <div id="content"></div>
+</div>
 <script>
-    const events_url = {{ url_for("event")|tojson }}
+    const EVENTS_URL = {{ url_for("event")|tojson }}
+    const EVENT_POLL_RATE = 2000;
 
-    function process_event(json_event) {
-        document.getElementById("content").innerHTML = json_event;
+    async function process_event(json_event) {
+        if (json_event == 1) {
+            document.getElementById("content").innerHTML = "<img src={{ url_for('static', filename='bigcat.gif') }}>";
+            await sleep(10000);
+        } else {
+            document.getElementById("content").innerHTML = "";
+        }
+        await sleep(EVENT_POLL_RATE);
     }
 
     function refresh() {
-        fetch(events_url).then(result => result.text()).then(process_event)
-        setTimeout(refresh, 2000);
+        fetch(EVENTS_URL)
+            .then(result => result.text())
+            .then(process_event)
+            .then(refresh);
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
 refresh()

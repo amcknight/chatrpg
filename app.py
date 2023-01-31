@@ -18,7 +18,7 @@ def event():
     if e:
         return e
     else :
-        return '', 204
+        return 'No Events', 204
 
 @app.route("/<name>")
 def player(name):
