@@ -12,7 +12,7 @@ logging.basicConfig(filename='log.log', level=logging.WARN)
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.1.00'
+        self.v = '0.1.01'
         self.first_message = 'HeyGuys'
         self.last_time = int(time.time())
         self.chatters = []
