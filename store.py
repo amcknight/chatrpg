@@ -45,3 +45,14 @@ class Store:
 
     def get_level_xp(self, level):
         return level*level*10
+
+    def add_battle(self, player):
+        battle = self.build_battle(player)
+        self.add_event(battle)
+
+    # TODO: Build a real battle
+    def build_battle(self, player):
+        return 1
+
+    def add_event(self, event):
+        self.redis.rpush('events', event)

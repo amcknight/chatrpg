@@ -59,6 +59,14 @@ class Bot(commands.Bot):
         await ctx.send(f'{author}: Level {lvl} {job.capitalize()}. Needs {xp} XP')
 
     @commands.command()
+    async def fight(self, ctx):
+        if not await self.active(): return
+        author = ctx.author.name
+        name = author.lower()
+        self.store.add_battle(name)
+        await ctx.send(f'Fight queued for {author}')
+
+    @commands.command()
     async def version(self, ctx):
         await ctx.send(f'v{self.v}')
 
