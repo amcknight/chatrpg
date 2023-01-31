@@ -70,9 +70,9 @@ Simply go into the `chatrpg` directory and run `pipenv run bot`
 In the `chatrpg` directory:
 
 ```bash
-sudo cp chatrpg.service /etc/systemd/system/
-sudo systemctl enable redis chatrpg
-sudo systemctl restart redis chatrpg
+sudo cp chatrpg-*.service /etc/systemd/system/
+sudo systemctl enable redis chatrpg-bot chatrpg-app
+sudo systemctl restart redis chatrpg-bot chatrpg-app
 ```
 
 To upgrade, restart the service or server and it will `git pull` before running `pipenv run bot`.
