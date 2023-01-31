@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import url_for
 from flask import render_template
+from waitress import serve
 from markupsafe import escape
 import redis
 import json
@@ -26,3 +27,6 @@ def player(name):
 
 with app.test_request_context():
     url_for('static', filename='style.css')
+
+if __name__ == '__main__':
+    serve(app)

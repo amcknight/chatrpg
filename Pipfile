@@ -7,6 +7,7 @@ name = "pypi"
 twitchio = "*"
 redis = "*"
 flask = "*"
+waitress = "*"
 
 [dev-packages]
 pylint = "*"
