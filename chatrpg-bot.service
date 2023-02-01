@@ -1,5 +1,5 @@
 [Unit]
-Description=Chat RPG service
+Description=Chat RPG Twitch Bot
 After=network.target
 
 [Service]
