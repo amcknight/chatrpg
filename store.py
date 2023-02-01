@@ -5,6 +5,7 @@ from math import floor, sqrt
 class Store:
     def __init__(self):
         self.default_job = 'lurker'
+        self.default_place = 'home'
 
     def connect(self):
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
@@ -39,6 +40,18 @@ class Store:
             self.redis.set(job_key, self.default_job)
             return self.default_job
         return job.decode()
+
+    def get_place(self, player):
+        place_key = f"{player}:place"
+        place = self.redis.get(place_key)
+        if not place:
+            self.redis.set(place_key, self.default_place)
+            return self.default_place
+        return place.decode()
+
+    def set_place(self, player, place):
+        place_key = f"{player}:place"
+        place = self.redis.set(place_key, place)
 
     def get_level(self, player):
         return floor(sqrt(self.get_xp(player)/10))

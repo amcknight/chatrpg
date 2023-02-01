@@ -18,6 +18,8 @@ class Bot(commands.Bot):
         self.chatters = []
         self.mangort_here = False
 
+        self.places = {"home":"home", "garden":"to the garden"}
+
         self.store = Store()
         try:
             self.store.connect()
@@ -57,6 +59,25 @@ class Bot(commands.Bot):
         lvl = self.store.get_level(name)
         xp = self.store.get_xp_left(name)
         await ctx.send(f'{author}: Level {lvl} {job.capitalize()}. Needs {xp} XP')
+
+    @commands.command()
+    async def go(self, ctx, *args):
+        if not await self.active(): return
+        author = ctx.author.name
+        name = author.lower()
+        new_place = args[0].strip().lower()
+        
+        if new_place not in self.places.keys():
+            await ctx.send(f'try: {", ".join(self.places.keys())}')
+            return
+
+        place = self.store.get_place(name)
+        if new_place == place:
+            await ctx.send(f"{author} you're already there")
+        else:
+            self.store.set_place(name, new_place)
+            await ctx.send(f'{author} went {self.places[new_place]}')
+            
 
     @commands.command()
     async def fight(self, ctx):
