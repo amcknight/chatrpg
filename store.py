@@ -1,5 +1,6 @@
 import redis
-import logging
+import time
+from battle import Fighter
 from math import floor, sqrt
 
 class Store:
@@ -49,9 +50,22 @@ class Store:
             return self.default_place
         return place.decode()
 
-    def set_place(self, player, place):
+    def set_place(self, player, new_place):
         place_key = f"{player}:place"
-        place = self.redis.set(place_key, place)
+        old_place = self.redis.set(place_key, new_place, get=True)
+
+        new_players_key = f"place:{new_place}:players"
+        old_players_key = f"place:{old_place}:players"
+        self.redis.sadd(new_players_key, player)
+        self.redis.srem(old_players_key, player)
+
+    def get_players_at(self, place):
+        players_key = f"place:{place}:players"
+        players_bytes = self.redis.smembers(players_key)
+        if not players_bytes:
+            return []
+        
+        return list(map(lambda player: player.decode(), players_bytes))
 
     def get_level(self, player):
         return floor(sqrt(self.get_xp(player)/10))
@@ -59,13 +73,30 @@ class Store:
     def get_level_xp(self, level):
         return level*level*10
 
-    def add_battle(self, player):
-        battle = self.build_battle(player)
-        self.add_event(battle)
-
-    # TODO: Build a real battle
-    def build_battle(self, player):
-        return 1
-
     def add_event(self, event):
         self.redis.rpush('events', event)
+
+    def get_shown(self):
+        return self.redis.lpop('shown')
+
+    def schedule_brawl(self, place, sched_time):
+        self.redis.zadd("brawltimes", {place:sched_time})
+
+    def next_brawl_place(self):
+        brawls = self.redis.zpopmin("brawltimes")
+        if not brawls: return
+        if not len(brawls) > 0: return
+
+        place, sched_time = brawls[0]
+        place = place.decode()
+        sched_time = int(sched_time)
+
+        if sched_time > int(time.time()):
+            self.schedule_brawl(place, sched_time)
+            return
+        
+        return place
+
+    def get_fighter(self, player):
+        # TODO: Something correct
+        return Fighter(4, 12, 5, 1, 4, 3)

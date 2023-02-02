@@ -9,9 +9,8 @@ class Battle:
         while not self.outcome():
             (next_actor, isLeft) = self.pick_next_actor()
             effect = next_actor.act(self.battle_view(next_actor, isLeft))
-            print(effect)
             self.apply_effect(effect)
-            print(self)
+        return { "log":[], "drops":{}, "final_team_state":[] } # TODO: Generate an actual battle log. should also be an object.
 
     def outcome(self):
         if len(list(filter(lambda f: f.alive(), self.left))) == 0:

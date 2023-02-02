@@ -6,22 +6,44 @@
     <div id="content"></div>
 </div>
 <script>
-    const EVENTS_URL = {{ url_for("event")|tojson }}
+    const EVENT_URL = {{ url_for("event")|tojson }};
+    const SHOWN_URL = {{ url_for("shown")|tojson }};
     const EVENT_POLL_RATE = 2000;
 
+    async function process_result(result) {
+        if (result.status == 200) {
+            return result.json();
+        }
+        return
+    }
+
     async function process_event(json_event) {
-        if (json_event == 1) {
+        if (typeof json_event == 'undefined') {
+            document.getElementById("content").innerHTML = "";
+        } else {
             document.getElementById("content").innerHTML = "<img src={{ url_for('static', filename='bigcat.gif') }}>";
             await sleep(10000);
-        } else {
-            document.getElementById("content").innerHTML = "";
+            shown(json_event)
         }
         await sleep(EVENT_POLL_RATE);
     }
 
+    function shown(json_event) {
+        fetch(SHOWN_URL, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(json_event)
+        })
+        .then(result => result.text())
+        .then(response_response => console.log(response_response))
+    }
+
     function refresh() {
-        fetch(EVENTS_URL)
-            .then(result => result.text())
+        fetch(EVENT_URL)
+            .then(process_result)
             .then(process_event)
             .then(refresh);
     }

@@ -1,6 +1,4 @@
-from flask import Flask
-from flask import url_for
-from flask import render_template
+from flask import Flask, url_for, render_template, request
 from waitress import serve
 from markupsafe import escape
 import redis
@@ -13,15 +11,21 @@ r = redis.Redis(host='localhost', port=6379, db=0)
 def event_worker():
     return render_template('app.html')
 
-@app.route("/event")
+@app.get("/event")
 def event():
-    e = r.lpop(f'events')
+    e = r.lpop('events')
     if e:
         return e
     else :
         return 'No Events', 204
 
-@app.route("/<name>")
+@app.post("/shown")
+def shown():
+    event = request.get_json()
+    r.rpush('shown', json.dumps(event))
+    return 'Shown Message Recieved', 201
+
+@app.get("/<name>")
 def player(name):
     return f"<p>Hello, {escape(name)}! This should show stuff about you, but not doesn't yet.</p>"
 

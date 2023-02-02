@@ -1,20 +1,25 @@
 Subject to drastic changes
 
 ### Version 0.2
-- Pop up browser source for game events
-- Players have stats
-- Locations exist
-- Enter and exit locations
+- Fights joinable
+- Fights display all players and rivals
+- Can't fight or join if you've queued or joined a fight
 
 ### Version 0.3
-- Fight enemies based on Location
+- Players have stats
+- Fights actually run
+- Fight displayed
 - Heal at Home
+- Death brings you home
+
+## Version 0.4
+- Equipment
+- Can switch Jobs
 - Trade and Equip Items
 - Buy Items from Home Location
-- Can switch Jobs
-- Players have Items, Equipment, Gold
+- Consumables usable
 
 ### Beyond
+- Talk to NPCs
 - Change your Autobattle rules
-- Fight in Groups when in same location
-- See the fights as Browser Source pop-up
+- In town sparring
