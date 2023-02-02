@@ -4,6 +4,7 @@
 - Pop up browser source exists for game events
 - Fight enemies based on Location
 - Fight plumbing is in place (locking, messages to app, unlocking)
+- Streamer can clean up and send everyone home
 
 ### Version 0.1
 - Connects to a stream

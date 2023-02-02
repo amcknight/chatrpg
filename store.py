@@ -76,18 +76,30 @@ class Store:
     def add_event(self, event):
         self.redis.rpush('events', event)
 
-    def get_shown(self):
+    def clear_events(self):
+        key = 'events'
+        events = list(map(lambda b: b.decode(), self.redis.lrange(key, 0, -1)))
+        self.redis.delete(key)
+        return events
+
+    def next_shown(self):
         return self.redis.lpop('shown')
+
+    def clear_shown(self):
+        key = 'events'
+        shown = list(map(lambda b: b.decode(), self.redis.lrange(key, 0, -1)))
+        self.redis.delete(key)
+        return shown
 
     def schedule_brawl(self, place, sched_time):
         self.redis.zadd("brawltimes", {place:sched_time})
 
     def next_brawl_place(self):
-        brawls = self.redis.zpopmin("brawltimes")
-        if not brawls: return
-        if not len(brawls) > 0: return
+        brawl_singleton = self.redis.zpopmin("brawltimes")
+        if not brawl_singleton: return
+        if not len(brawl_singleton) > 0: return
 
-        place, sched_time = brawls[0]
+        place, sched_time = brawl_singleton[0]
         place = place.decode()
         sched_time = int(sched_time)
 
@@ -97,6 +109,18 @@ class Store:
         
         return place
 
+    def clear_brawls(self):
+        key = 'brawltimes'
+        vals = list(map(lambda b: b.decode(), self.redis.zrange(key, 0, -1)))
+        self.redis.delete(key)
+        return vals
+
     def get_fighter(self, player):
         # TODO: Something correct
         return Fighter(4, 12, 5, 1, 4, 3)
+
+    def send_all_home(self):
+        for key in self.redis.scan_iter(f'place:*:players'):
+            self.redis.delete(key.decode())
+        for key in self.redis.scan_iter(f'*:place'):
+            self.redis.delete(key.decode())

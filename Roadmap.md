@@ -1,9 +1,7 @@
 Subject to drastic changes
 
 ### Version 0.2
-- Fights joinable
 - Fights display all players and rivals
-- Can't fight or join if you've queued or joined a fight
 
 ### Version 0.3
 - Players have stats

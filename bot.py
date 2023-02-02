@@ -9,7 +9,7 @@ from random import choice, randrange
 from twitchio.ext import commands
 from twitchio.channel import Channel
 
-logging.basicConfig(filename='log.log', level=logging.WARN)
+logging.basicConfig(filename='log.log', level=logging.INFO)
 
 
 def sec():
@@ -18,7 +18,7 @@ def sec():
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.1.04'
+        self.v = '0.1.06'
         self.first_message = 'HeyGuys'
         self.last_time = sec()
         self.chatters = []
@@ -57,11 +57,11 @@ class Bot(commands.Bot):
     # TODO: This needs to be called more regularly
     def update(self):
         self.store.update_xp(self.chatters, self.since_last())
-        self.process_shown_events()
+        self.process_shown_event()
         self.process_schedule()
 
-    def process_shown_events(self):
-        event = self.store.get_shown()
+    def process_shown_event(self):
+        event = self.store.next_shown()
         if not event: return
 
          # TODO: Not all events are going to be battle logs. Also probably should parse to a dedicated object. None of this works right.
@@ -87,6 +87,30 @@ class Bot(commands.Bot):
             battle = self.build_battle(place, players)
             battle_log = battle.fight()
             self.store.add_event(json.dumps(battle_log))
+
+    async def reset(self, ctx):
+        self.store.send_all_home()
+
+        places = self.store.clear_brawls()
+        if len(places) > 0:
+            await ctx.send(f'Brawls canceled in {" and ".join(places)}')
+        
+        events = self.store.clear_events()
+        if len(events) > 0:
+            await ctx.send(f'{len(events)} brawls stifled')
+        
+        if len(self.locked_players) > 0:
+            ctx.send(f'Unlocked players: {", ".join(self.locked_players)}')
+            self.locked_players = []
+
+        if len(self.locked_places) > 0:
+            ctx.send(f'Unlocked places: {", ".join(self.locked_places)}')
+            self.locked_places = []
+        
+        shown_events = self.store.clear_shown()
+        if len(shown_events) > 0:
+            await ctx.send(f'{len(shown_events)} brawls revoked')
+
 
     def build_battle(self, place, players):
         team = list(map(self.store.get_fighter, players))
@@ -116,6 +140,13 @@ class Bot(commands.Bot):
         await ctx.send(f'{author}: Level {lvl} {job.capitalize()}. Needs {xp} XP')
 
     @commands.command()
+    async def home(self, ctx):
+        author = ctx.author.name
+        name = author.lower()
+        if name == 'mangort':
+            await self.reset(ctx)
+
+    @commands.command()
     async def go(self, ctx, *args):
         if not await self.active(): return
         author = ctx.author.name
@@ -125,8 +156,11 @@ class Bot(commands.Bot):
             await ctx.send(f'{author} is locked until the brawl')
             return
 
+        if not args or len(args) < 1:
+            await ctx.send(f'try: {", ".join(self.places.keys())}')
+            return
+
         new_place = args[0].strip().lower()
-        
         if new_place not in self.places.keys():
             await ctx.send(f'try: {", ".join(self.places.keys())}')
             return
