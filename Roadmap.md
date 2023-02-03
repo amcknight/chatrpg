@@ -1,12 +1,11 @@
 Subject to drastic changes
 
 ### Version 0.2
-- Fights display all players and rivals
+- Brawl display all players and enemies
 
 ### Version 0.3
 - Players have stats
-- Fights actually run
-- Fight displayed
+- Brawl log displayed
 - Heal at Home
 - Death brings you home
 
