@@ -32,13 +32,21 @@ def clean_key(key):
     clean_part = dirty_part[2:-1]
     return f"{key_prefix}:{clean_part}"
 
-def copy_db(db_id):
+def backup_db_to(db_id):
     for key_bytes in r.scan_iter():
         key = key_bytes.decode()
         r.copy(key, key, destination_db=db_id)
 
+def restore_db_from(db_id):
+    r.flushdb()
+    r.select(db_id)
+    for key_bytes in r.scan_iter():
+        key = key_bytes.decode()
+        r.copy(key, key, destination_db=0)
+    r.select(0)
+
 if __name__ == '__main__':
-    copy_db(1)
-    add_key_prefix('*:place', 'player', dry=True)
-    add_key_prefix('*:job', 'player', dry=True)
-    add_key_prefix('*:xp:*', 'player', dry=True)
+    restore_db_from(1)
+    # add_key_prefix('*:place', 'player', dry=True)
+    # add_key_prefix('*:job', 'player', dry=True)
+    # add_key_prefix('*:xp:*', 'player', dry=True)
