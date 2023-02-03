@@ -14,9 +14,9 @@ def merge_xp():
         r.incrby(ck, r.get(dk))
         r.delete(dk)
 
-# Warning, this is not idempotent!
+# Warning, this is not idempotent! Also uses slow 'keys' so not good for massive changes
 def add_key_prefix(key_pattern, prefix, dry = False):
-    for old_key in r.scan_iter(key_pattern):
+    for old_key in r.keys(key_pattern):
         old_key = old_key.decode()
         val = r.get(old_key).decode()
         new_key = f'{prefix}:{old_key}'
@@ -46,7 +46,6 @@ def restore_db_from(db_id):
     r.select(0)
 
 if __name__ == '__main__':
-    restore_db_from(1)
-    # add_key_prefix('*:place', 'player', dry=True)
-    # add_key_prefix('*:job', 'player', dry=True)
-    # add_key_prefix('*:xp:*', 'player', dry=True)
+    add_key_prefix('*:place', 'player', dry=True)
+    add_key_prefix('*:job', 'player', dry=True)
+    add_key_prefix('*:xp:*', 'player', dry=True)
