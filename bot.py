@@ -2,13 +2,10 @@ import os
 import time
 import logging
 import json
-import threading
 from fight.brawl import Brawl
 from fight.fighter import Fighter
 from store import Store
-from random import choice, randrange
 from twitchio.ext import commands
-from twitchio.channel import Channel
 
 logging.basicConfig(filename='log.log', level=logging.INFO)
 
