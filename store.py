@@ -1,6 +1,6 @@
 import redis
 import time
-from battle import Fighter
+from fight.fighter import Fighter
 from math import floor, sqrt
 
 class Store:

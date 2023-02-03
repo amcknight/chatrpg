@@ -3,7 +3,8 @@ import time
 import logging
 import json
 import threading
-from battle import Battle, Fighter
+from fight.brawl import Brawl
+from fight.fighter import Fighter
 from store import Store
 from random import choice, randrange
 from twitchio.ext import commands
@@ -26,8 +27,8 @@ class Bot(commands.Bot):
 
         self.places = {"home":"home", "garden":"to the garden"}
         self.fight_places = ["garden"]
-        self.locked_players = []
-        self.locked_places = []
+        self.locked_players = set()
+        self.locked_places = set()
 
         self.store = Store()
         try:
@@ -64,18 +65,17 @@ class Bot(commands.Bot):
         event = self.store.next_shown()
         if not event: return
 
-         # TODO: Not all events are going to be battle logs. Also probably should parse to a dedicated object. None of this works right.
-        battle_log = json.loads(event)
-        players = ['mangort'] # battle_log.get_team()
-        self.apply_battle_log(battle_log)
-        for player in players:
-            self.locked_players.remove(player)
+         # TODO: Not all events are going to be brawl logs. Also probably should parse to a dedicated object. None of this works right.
+        brawl_log = json.loads(event)
+        players = ['mangort'] # brawl_log.get_team()
+        self.apply_brawl_log(brawl_log)
+        self.locked_players -= players
 
-    def apply_battle_log(self, battle_log):
+    def apply_brawl_log(self, brawl_log):
         # update stats like HP
         # give item drops to players
         # move dead players home and penalize
-        print(battle_log)
+
         pass
 
     def process_schedule(self):
@@ -83,10 +83,10 @@ class Bot(commands.Bot):
         if place:
             players = self.store.get_players_at(place)
             for player in players:
-                self.locked_players.append(player)
-            battle = self.build_battle(place, players)
-            battle_log = battle.fight()
-            self.store.add_event(json.dumps(battle_log))
+                self.locked_players.add(player)
+            brawl = self.build_brawl(place, players)
+            brawl_log = brawl.run()
+            self.store.add_event(json.dumps(brawl_log))
 
     async def reset(self, ctx):
         self.store.send_all_home()
@@ -100,23 +100,23 @@ class Bot(commands.Bot):
             await ctx.send(f'{len(events)} brawls stifled')
         
         if len(self.locked_players) > 0:
-            ctx.send(f'Unlocked players: {", ".join(self.locked_players)}')
-            self.locked_players = []
+            await ctx.send(f'Unlocked players: {", ".join(self.locked_players)}')
+            self.locked_players = set()
 
         if len(self.locked_places) > 0:
-            ctx.send(f'Unlocked places: {", ".join(self.locked_places)}')
-            self.locked_places = []
+            await ctx.send(f'Unlocked places: {", ".join(self.locked_places)}')
+            self.locked_places = set()
         
         shown_events = self.store.clear_shown()
         if len(shown_events) > 0:
             await ctx.send(f'{len(shown_events)} brawls revoked')
 
 
-    def build_battle(self, place, players):
+    def build_brawl(self, place, players):
         team = list(map(self.store.get_fighter, players))
         rivals = self.generate_rivals(place)
 
-        return Battle(team, rivals)
+        return Brawl(place, team, rivals)
     
     def generate_rivals(self, place):
         # TODO: Something reasonable
@@ -190,11 +190,11 @@ class Bot(commands.Bot):
         if place not in self.fight_places:
             await ctx.send(f"You can't fight here")
         else:
-            wait = 60
+            wait = 10
             sched_time = sec() + wait
             self.store.schedule_brawl(place, sched_time)
-            self.locked_players.append(name)
-            self.locked_places.append(place)
+            self.locked_players.add(name)
+            self.locked_places.add(place)
             await ctx.send(f'{author} is brawling at {place} in {wait} seconds! Be there to fight or get out!')
 
     @commands.command()
