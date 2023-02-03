@@ -68,8 +68,10 @@ class Bot(commands.Bot):
          # TODO: Not all events are going to be brawl logs. Also probably should parse to a dedicated object. None of this works right.
         brawl_log = json.loads(event)
         players = ['mangort'] # brawl_log.get_team()
+        place = 'garden' # brawl_log.get_place()
         self.apply_brawl_log(brawl_log)
         self.locked_players -= players
+        self.locked_places.remove(place)
 
     def apply_brawl_log(self, brawl_log):
         # update stats like HP
