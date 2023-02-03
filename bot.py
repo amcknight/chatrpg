@@ -16,7 +16,7 @@ def sec():
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.1.06'
+        self.v = '0.1.07'
         self.first_message = 'HeyGuys'
         self.last_time = sec()
         self.chatters = []

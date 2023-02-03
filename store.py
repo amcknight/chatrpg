@@ -18,13 +18,13 @@ class Store:
             return False
 
     def update_xp(self, players, dxp):
-        for p in players:
+        for player in players:
             job = self.get_job(p)
-            self.redis.incrby(f"{p}:xp:{job}", dxp)
+            self.redis.incrby(f"player:{player}:xp:{job}", dxp)
 
     def get_xp(self, player):
         job = self.get_job(player)
-        xp_key = f"{player}:xp:{job}"
+        xp_key = f"player:{player}:xp:{job}"
         xp = self.redis.get(xp_key)
         if not xp:
             self.redis.set(xp_key, 0)
@@ -35,7 +35,7 @@ class Store:
         return self.get_level_xp(self.get_level(player) + 1) - self.get_xp(player)
 
     def get_job(self, player):
-        job_key = f"{player}:job"
+        job_key = f"player:{player}:job"
         job = self.redis.get(job_key)
         if not job:
             self.redis.set(job_key, self.default_job)
@@ -43,7 +43,7 @@ class Store:
         return job.decode()
 
     def get_place(self, player):
-        place_key = f"{player}:place"
+        place_key = f"player:{player}:place"
         place = self.redis.get(place_key)
         if not place:
             self.redis.set(place_key, self.default_place)
@@ -51,7 +51,7 @@ class Store:
         return place.decode()
 
     def set_place(self, player, new_place):
-        place_key = f"{player}:place"
+        place_key = f"player:{player}:place"
         old_place = self.redis.set(place_key, new_place, get=True)
 
         new_players_key = f"place:{new_place}:players"
@@ -122,5 +122,5 @@ class Store:
     def send_all_home(self):
         for key in self.redis.scan_iter(f'place:*:players'):
             self.redis.delete(key.decode())
-        for key in self.redis.scan_iter(f'*:place'):
+        for key in self.redis.scan_iter(f'player:*:place'):
             self.redis.delete(key.decode())
