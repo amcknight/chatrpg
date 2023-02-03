@@ -16,7 +16,7 @@ def sec():
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.1.07'
+        self.v = '0.1.08'
         self.first_message = 'HeyGuys'
         self.last_time = sec()
         self.chatters = []
@@ -67,7 +67,7 @@ class Bot(commands.Bot):
         players = ['mangort'] # brawl_log.get_team()
         place = 'garden' # brawl_log.get_place()
         self.apply_brawl_log(brawl_log)
-        self.locked_players -= players
+        self.locked_players -= set(players)
         self.locked_places.remove(place)
 
     def apply_brawl_log(self, brawl_log):
