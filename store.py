@@ -19,7 +19,7 @@ class Store:
 
     def update_xp(self, players, dxp):
         for player in players:
-            job = self.get_job(p)
+            job = self.get_job(player)
             self.redis.incrby(f"player:{player}:xp:{job}", dxp)
 
     def get_xp(self, player):
