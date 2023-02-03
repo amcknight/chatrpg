@@ -21,6 +21,7 @@
         if (typeof json_event == 'undefined') {
             document.getElementById("content").innerHTML = "";
         } else {
+            console.log(json_event)
             document.getElementById("content").innerHTML = "<img src={{ url_for('static', filename='bigcat.gif') }}>";
             await sleep(10000);
             shown(json_event)

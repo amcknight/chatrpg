@@ -117,7 +117,7 @@ class Store:
 
     def get_fighter(self, player):
         # TODO: Something correct
-        return Fighter(4, 12, 5, 1, 4, 3)
+        return Fighter(f'{player}1', player, 4, 12, 5, 1, 4, 3)
 
     def send_all_home(self):
         for key in self.redis.scan_iter(f'place:*:players'):

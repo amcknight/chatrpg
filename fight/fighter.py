@@ -3,7 +3,9 @@ from fight.effect import Effect
 from random import choice
 
 class Fighter:
-    def __init__(self, level, vitality, strength, damage, defense, chin):
+    def __init__(self, id, name, level, vitality, strength, damage, defense, chin):
+        self.id = id
+        self.name = name
         self.level = level
         self.vitality = vitality
         self.strength = strength
@@ -13,7 +15,7 @@ class Fighter:
         self.restore()
 
     def __str__(self):
-        return f"{self.life}/{self.max_life()}"
+        return f"{self.name} {self.life}/{self.max_life()}"
 
     def act(self, brawl_view):
         team, rivals = brawl_view

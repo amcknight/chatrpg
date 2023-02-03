@@ -1,6 +1,6 @@
+import json
 from random import randrange
 from fight.effect import Effect
-
 from fight.fighter import Fighter
 
 class Brawl:
@@ -20,8 +20,22 @@ class Brawl:
             next_fighter, isLeft = self.pick_next_fighter()
             effect = next_fighter.act(self.brawl_view(next_fighter, isLeft))
             self.apply_effect(effect)
-            self.log.append((left_state, right_state, next_fighter.__str__(), effect.__str__()))
+            self.log.append({
+                "left":left_state,
+                "right":right_state,
+                "next":next_fighter.name,
+                "effect":effect.__str__()
+            })
         self.ran = True
+
+    def to_json(self):
+        j = {
+            "place": self.place,
+            "left_names": list(map(lambda f: f.name, self.left)),
+            "outcome":self.outcome(),
+            "log": self.log
+        }
+        return json.dumps(j)
 
     def outcome(self):
         if len(list(filter(lambda f: f.alive(), self.left))) == 0:

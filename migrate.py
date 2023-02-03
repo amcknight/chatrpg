@@ -45,6 +45,10 @@ def restore_db_from(db_id):
         r.copy(key, key, destination_db=0)
     r.select(0)
 
+def reground_from_primary_info():
+    # TODO: Sync for rebuilding `place:<place>:players` from `player:<player>:place`
+    pass
+
 if __name__ == '__main__':
     add_key_prefix('*:place', 'player', dry=True)
     add_key_prefix('*:job', 'player', dry=True)
