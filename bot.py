@@ -98,6 +98,7 @@ class Bot(commands.Bot):
             raise Exception('No players in brawl!')
 
         for player in players:
+            #TODO: Check that pic is downloaded here
             self.locked_players.add(player)
         
         brawl = self.build_brawl(place, players)
