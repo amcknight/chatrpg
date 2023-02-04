@@ -6,6 +6,8 @@ def ored(strs):
     return word_listed(strs, 'or')
 
 def word_listed(strs, joiner):
+    if type(strs) == 'set':
+        strs = list(strs)
     if len(strs) == 1:
         return strs[0]
     else:

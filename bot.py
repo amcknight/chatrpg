@@ -63,7 +63,7 @@ class Bot(commands.Bot):
         event = self.store.next_shown()
         if not event: return
 
-         # TODO: Not all events are going to be brawl logs. Also probably should parse to a dedicated object. None of this works right.
+         # TODO: Not all events are going to be brawl logs
         brawl_info = json.loads(event)
         players = brawl_info['left_names']
         place = brawl_info['place']

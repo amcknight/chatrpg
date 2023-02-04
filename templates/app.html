@@ -17,14 +17,25 @@
         return
     }
 
-    async function process_event(json_event) {
-        if (typeof json_event == 'undefined') {
+    async function process_event(jsonEvent) {
+        if (typeof jsonEvent == 'undefined') {
             document.getElementById("content").innerHTML = "";
         } else {
-            console.log(json_event)
-            document.getElementById("content").innerHTML = "<img src={{ url_for('static', filename='bigcat.gif') }}>";
+            var left = jsonEvent['left_names'];
+            var right = jsonEvent['right_names'];
+            var cat = "<img src={{ url_for('static', filename='bigcat.gif') }}>";
+            battlefieldLeft = "";
+            battlefieldRight = "";
+            for (f in left) {
+                battlefieldLeft += cat;
+            }
+            for (f in right) {
+                battlefieldRight += cat;
+            }
+            battlefield = "<p>" + battlefieldLeft + "</p><p>" + battlefieldRight + "</p>";
+            document.getElementById("content").innerHTML = battlefield;
             await sleep(10000);
-            shown(json_event)
+            shown(jsonEvent);
         }
         await sleep(EVENT_POLL_RATE);
     }
@@ -53,7 +64,7 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-refresh()
+refresh();
 
 </script>
 </body>

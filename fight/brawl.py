@@ -32,6 +32,7 @@ class Brawl:
         j = {
             "place": self.place,
             "left_names": list(map(lambda f: f.name, self.left)),
+            "right_names": list(map(lambda f: f.name, self.right)),
             "outcome":self.outcome(),
             "log": self.log
         }
