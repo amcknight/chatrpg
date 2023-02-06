@@ -18,11 +18,12 @@ def sec():
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.1.10'
+        self.v = '0.1.11'
         self.first_message = 'HeyGuys'
         self.last_time = sec()
-        self.chatters = []
-        self.mangort_here = False
+        self.chatters = set()
+        self.streamer_here = False
+        self.streamer = 'mangort'
 
         self.places = {"home":"home", "garden":"to the garden"}
         self.fight_places = ["garden"]
@@ -78,7 +79,7 @@ class Bot(commands.Bot):
         elif outcome_str == 'Tired':
             await channel.send(f'{players_str} got tired of fighting. Tie, I guess. :/')
         else:
-            await channel.send(f'{players_str}... unknown battle outcome? mangort')
+            await channel.send(f'{players_str}... unknown battle outcome? {self.streamer}')
 
 
     def apply_brawl_log(self, brawl_info):
@@ -89,7 +90,6 @@ class Bot(commands.Bot):
         pass
 
     async def queue_brawl(self, ctx, place):
-        # TODO: Don't run the queued_brawl if RESET was called
         players = self.store.get_players_at(place)
         if len(players) < 1:
             raise Exception('No players in brawl! Locking failed?')
@@ -110,13 +110,9 @@ class Bot(commands.Bot):
         if len(events) > 0:
             await ctx.send(f'{len(events)} brawls stifled')
         
-        if len(self.locked_players) > 0:
-            await ctx.send(f'Unlocked players: {anded(self.locked_players)}')
+        if len(self.locked_players) + len(self.locked_places) > 0:
+            await ctx.send(f'Unlocked {anded(self.locked_players + self.locked_places)}')
             self.locked_players = set()
-
-        if len(self.locked_places) > 0:
-            await ctx.send(f'Unlocked places: {anded(self.locked_places)}')
-            self.locked_places = set()
         
         shown_events = self.store.clear_shown()
         if len(shown_events) > 0:
@@ -132,8 +128,8 @@ class Bot(commands.Bot):
         # TODO: Something reasonable
         return [
             Fighter('BigCat1', 'Bigcat', 2, 9, 3, 1, 3, 0),
-            Fighter('BigCat2', 'Bigcat', 2, 9, 3, 1, 3, 0),
-            Fighter('BigCat3', 'Bigcat', 4, 14, 4, 1, 4, 1)
+            Fighter('Goose1', 'Goose', 4, 14, 4, 1, 4, 1),
+            Fighter('BigCat2', 'Bigcat', 2, 9, 3, 1, 3, 0)
         ]
 
     ##### Command Management: #####
@@ -149,11 +145,13 @@ class Bot(commands.Bot):
         await ctx.send(f'{author}: Level {lvl} {job.capitalize()}. Needs {xp} XP')
 
     @commands.command()
-    async def home(self, ctx):
+    async def sendhome(self, ctx):
         author = ctx.author.name
         name = author.lower()
-        if name == 'mangort':
+        if name == self.streamer:
             await self.reset(ctx)
+        else:
+            await ctx.send('Only the streamer can send everyone home')
 
     @commands.command()
     async def butt(self, ctx):
@@ -237,62 +235,59 @@ class Bot(commands.Bot):
 
     async def event_join(self, channel, user):
         name = user.name.lower()
-        if name == 'mangort':
-            await self.mangort_arrived()
+        if name == self.streamer:
+            await self.streamer_arrived()
 
         if name not in self.chatters:
-            self.chatters.append(name)
+            self.chatters.add(name)
 
     async def event_part(self, user):
         name = user.name.lower()
         channel = user.channel
 
-        if name == 'mangort':
-            await self.mangort_left(channel)
+        if name == self.streamer:
+            await self.streamer_left(channel)
 
         if name in self.chatters:
             self.chatters.remove(name)
 
     async def event_message(self, msg):
-        'Runs every time a message is sent in chat'
+        if not msg.author: return # No author. Maybe because from first_message?
 
-        if not msg.author:
-            return # No author. Maybe because from first_message?
-
-        content = msg.content
         name = msg.author.name.lower()
-        if name == self.nick.lower():
-            return
+        self.chatters.add(name)
+        if name == self.nick.lower(): return
 
-        if name == 'mangort':
-            await self.mangort_arrived()
+        if name == self.streamer:
+            await self.streamer_arrived()
 
         if await self.active():
-            self.store.update_xp(self.chatters, self.since_last())
+            self.store.update_xp(list(self.chatters), self.since_last())
 
+        content = msg.content
         if self.is_command(content):
             await self.handle_commands(msg)
 
     async def event_error(self, error):
         print(error)
         logging.error(f"Event Error: {error}")
-        await self.default_channel().send("/me :boom: :bug: mangort")
+        await self.default_channel().send(f"/me :boom: :bug: {self.streamer}")
 
-    ##### Mangort and Store state management: #####
+    ##### Streamer and Store state management: #####
 
-    async def mangort_arrived(self):
-        if self.mangort_here: return
+    async def streamer_arrived(self):
+        if self.streamer_here: return
         self.since_last()
-        self.mangort_here = True
-        await self.default_channel().send("hi mangort")
+        self.streamer_here = True
+        await self.default_channel().send(f"hi {self.streamer}")
 
-    async def mangort_left(self, channel):
-        if not self.mangort_here: return
+    async def streamer_left(self, channel):
+        if not self.streamer_here: return
         if await self.active():
-            await self.update(channel)
-        self.chatters = []
-        self.mangort_here = False
-        await self.default_channel().send("bye mangort")
+            self.store.update_xp(channel)
+        self.chatters = set()
+        self.streamer_here = False
+        await self.default_channel().send(f"bye {self.streamer}")
 
     async def active(self):
         connected = self.store.connected()
@@ -302,7 +297,7 @@ class Bot(commands.Bot):
                 self.store.connect()
             except:
                 pass
-        return connected and self.mangort_here
+        return connected and self.streamer_here
 
     async def check_connection_change(self, connected):
         if self.was_connected == connected: return
