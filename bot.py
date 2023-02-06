@@ -54,15 +54,14 @@ class Bot(commands.Bot):
         self.last_time = now
         return since
 
-    # TODO: This needs to be called more regularly
-    async def update(self, channel):
-        self.store.update_xp(self.chatters, self.since_last())
-        await self.process_shown_event(channel)
-
-    async def process_shown_event(self, channel):
+    async def poll_shown(self, channel):
         event = self.store.next_shown()
-        if not event: return
+        if event:
+            await self.process_shown(channel, event)
+        await asyncio.sleep(1)
+        await self.poll_shown(channel)
 
+    async def process_shown(self, channel, event):
          # TODO: Not all events are going to be brawl logs
         brawl_info = json.loads(event)
         players = brawl_info['left_names']
@@ -89,29 +88,23 @@ class Bot(commands.Bot):
         # move dead players home and penalize
         pass
 
-    async def process_schedule(self, channel):
-        place = self.store.next_brawl_place()
-        if not place: return 
-
+    async def queue_brawl(self, ctx, place):
+        # TODO: Don't run the queued_brawl if RESET was called
         players = self.store.get_players_at(place)
         if len(players) < 1:
-            raise Exception('No players in brawl!')
+            raise Exception('No players in brawl! Locking failed?')
 
         for player in players:
             #TODO: Check that pic is downloaded here
             self.locked_players.add(player)
         
         brawl = self.build_brawl(place, players)
-        await channel.send(f"{anded(list(map(lambda f: f.name, brawl.left)))} are queued to brawl {anded(list(map(lambda f: f.name, brawl.right)))} in {brawl.place}!")
         brawl.run()
         self.store.add_event(brawl.to_json())
+        await ctx.send(f"{anded(list(map(lambda f: f.name, brawl.left)))} are brawling {anded(list(map(lambda f: f.name, brawl.right)))} in {brawl.place}!")
 
     async def reset(self, ctx):
         self.store.send_all_home()
-
-        places = self.store.clear_brawls()
-        if len(places) > 0:
-            await ctx.send(f'Brawls canceled in {" and ".join(places)}')
         
         events = self.store.clear_events()
         if len(events) > 0:
@@ -129,7 +122,6 @@ class Bot(commands.Bot):
         if len(shown_events) > 0:
             await ctx.send(f'{len(shown_events)} brawls revoked')
 
-
     def build_brawl(self, place, players):
         team = list(map(self.store.get_fighter, players))
         rivals = self.generate_rivals(place)
@@ -143,7 +135,6 @@ class Bot(commands.Bot):
             Fighter('BigCat2', 'Bigcat', 2, 9, 3, 1, 3, 0),
             Fighter('BigCat3', 'Bigcat', 4, 14, 4, 1, 4, 1)
         ]
-
 
     ##### Command Management: #####
 
@@ -237,7 +228,9 @@ class Bot(commands.Bot):
     async def event_ready(self):
         'Called once when the bot goes online.'
         print(f"{self.nick} is online!")
-        await self.default_channel().send(self.first_message)
+        channel = self.default_channel()
+        await channel.send(self.first_message)
+        await self.poll_shown(channel)
 
     async def event_raw_data(self, data):
         logging.info(data)
@@ -261,12 +254,11 @@ class Bot(commands.Bot):
             self.chatters.remove(name)
 
     async def event_message(self, msg):
-        'Runs every time a message is sent in chat.'
+        'Runs every time a message is sent in chat'
 
         if not msg.author:
             return # No author. Maybe because from first_message?
 
-        channel = msg.channel
         content = msg.content
         name = msg.author.name.lower()
         if name == self.nick.lower():
@@ -276,7 +268,7 @@ class Bot(commands.Bot):
             await self.mangort_arrived()
 
         if await self.active():
-            await self.update(channel)
+            self.store.update_xp(self.chatters, self.since_last())
 
         if self.is_command(content):
             await self.handle_commands(msg)
