@@ -91,30 +91,6 @@ class Store:
         self.redis.delete(key)
         return shown
 
-    def schedule_brawl(self, place, sched_time):
-        self.redis.zadd("brawltimes", {place:sched_time})
-
-    def next_brawl_place(self):
-        brawl_singleton = self.redis.zpopmin("brawltimes")
-        if not brawl_singleton: return
-        if not len(brawl_singleton) > 0: return
-
-        place, sched_time = brawl_singleton[0]
-        place = place.decode()
-        sched_time = int(sched_time)
-
-        if sched_time > int(time.time()):
-            self.schedule_brawl(place, sched_time)
-            return
-        
-        return place
-
-    def clear_brawls(self):
-        key = 'brawltimes'
-        vals = list(map(lambda b: b.decode(), self.redis.zrange(key, 0, -1)))
-        self.redis.delete(key)
-        return vals
-
     def get_fighter(self, player):
         # TODO: Something correct
         return Fighter(f'{player}1', player, 4, 12, 5, 1, 4, 3)

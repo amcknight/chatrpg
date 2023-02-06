@@ -58,7 +58,6 @@ class Bot(commands.Bot):
     async def update(self, channel):
         self.store.update_xp(self.chatters, self.since_last())
         await self.process_shown_event(channel)
-        await self.process_schedule(channel)
 
     async def process_shown_event(self, channel):
         event = self.store.next_shown()
@@ -204,7 +203,6 @@ class Bot(commands.Bot):
         if not await self.active(): return
 
         author = ctx.author.name
-        channel = ctx.channel
         name = author.lower()
         if name in self.locked_players:
             place = self.store.get_place(name)
@@ -220,13 +218,11 @@ class Bot(commands.Bot):
             await ctx.send(f"You can't fight here")
         else:
             wait = 10
-            sched_time = sec() + wait
-            self.store.schedule_brawl(place, sched_time)
             self.locked_players.add(name)
             self.locked_places.add(place)
             await ctx.send(f'{author} is brawling at {place} in {wait} seconds! Be there to fight or get out!')
-            await asyncio.sleep(wait+1)
-            await self.update(channel)
+            await asyncio.sleep(wait)
+            await self.queue_brawl(ctx, place)
 
     @commands.command()
     async def version(self, ctx):
