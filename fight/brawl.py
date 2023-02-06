@@ -31,8 +31,8 @@ class Brawl:
     def to_json(self):
         j = {
             "place": self.place,
-            "left_names": list(map(lambda f: f.name, self.left)),
-            "right_names": list(map(lambda f: f.name, self.right)),
+            "left": list(map(lambda f: f.to_json(), self.left)),
+            "right": list(map(lambda f: f.to_json(), self.right)),
             "outcome":self.outcome(),
             "log": self.log
         }

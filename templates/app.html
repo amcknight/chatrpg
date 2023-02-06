@@ -21,23 +21,25 @@
         if (typeof jsonEvent == 'undefined') {
             document.getElementById("content").innerHTML = "";
         } else {
-            var left = jsonEvent['left_names'];
-            var right = jsonEvent['right_names'];
-            var cat = "<img src={{ url_for('static', filename='bigcat.gif') }}>";
-            battlefieldLeft = "";
-            battlefieldRight = "";
-            for (f in left) {
-                battlefieldLeft += cat;
-            }
-            for (f in right) {
-                battlefieldRight += cat;
-            }
-            battlefield = "<p>" + battlefieldLeft + "</p><p>" + battlefieldRight + "</p>";
-            document.getElementById("content").innerHTML = battlefield;
+            console.log(jsonEvent)
+            document.getElementById("content").innerHTML = battlefieldHTML(jsonEvent);
             await sleep(10000);
             shown(jsonEvent);
         }
         await sleep(EVENT_POLL_RATE);
+    }
+
+    function battlefieldHTML(jsonEvent) {
+        fighter_gif_template = "<img src={{ url_for('static', filename='proxy.gif') }}>";
+        battlefieldLeft = "";
+        for (fighter of jsonEvent['left']) {
+            battlefieldLeft += fighter_gif_template.replace("proxy.gif", fighter['gif']);
+        }
+        battlefieldRight = "";
+        for (fighter of jsonEvent['right']) {
+            battlefieldRight += fighter_gif_template.replace("proxy.gif", fighter['gif']);
+        }
+        return battlefield = "<p>" + battlefieldLeft + "</p><p>" + battlefieldRight + "</p>";
     }
 
     function shown(json_event) {

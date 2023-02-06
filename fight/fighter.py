@@ -3,9 +3,10 @@ from fight.effect import Effect
 from random import choice
 
 class Fighter:
-    def __init__(self, id, name, level, vitality, strength, damage, defense, chin):
+    def __init__(self, id, name, gif, level, vitality, strength, damage, defense, chin):
         self.id = id
         self.name = name
+        self.gif = gif
         self.level = level
         self.vitality = vitality
         self.strength = strength
@@ -41,3 +42,9 @@ class Fighter:
 
     def state(self):
         return self.__str__()
+
+    def to_json(self):
+        return {
+            'name': self.name,
+            'gif': self.gif
+        }

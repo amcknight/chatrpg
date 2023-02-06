@@ -65,7 +65,7 @@ class Bot(commands.Bot):
     async def process_shown(self, channel, event):
          # TODO: Not all events are going to be brawl logs
         brawl_info = json.loads(event)
-        players = brawl_info['left_names']
+        players = list(map(lambda p: p['name'], brawl_info['left']))
         place = brawl_info['place']
         self.apply_brawl_log(brawl_info)
         self.locked_players -= set(players)
@@ -111,7 +111,7 @@ class Bot(commands.Bot):
             await ctx.send(f'{len(events)} brawls stifled')
         
         if len(self.locked_players) + len(self.locked_places) > 0:
-            await ctx.send(f'Unlocked {anded(self.locked_players + self.locked_places)}')
+            await ctx.send(f'Unlocked {anded(list(self.locked_players) + list(self.locked_places))}')
             self.locked_players = set()
         
         shown_events = self.store.clear_shown()
@@ -127,9 +127,9 @@ class Bot(commands.Bot):
     def generate_rivals(self, place):
         # TODO: Something reasonable
         return [
-            Fighter('BigCat1', 'Bigcat', 2, 9, 3, 1, 3, 0),
-            Fighter('Goose1', 'Goose', 4, 14, 4, 1, 4, 1),
-            Fighter('BigCat2', 'Bigcat', 2, 9, 3, 1, 3, 0)
+            Fighter('BigCat1', 'Bigcat', 'bigcat.gif', 2, 9, 3, 1, 3, 0),
+            Fighter('Goose1', 'Goose', 'goosebrat.gif', 4, 14, 4, 1, 4, 1),
+            Fighter('BigCat2', 'Bigcat', 'bigcat.gif', 2, 9, 3, 1, 3, 0)
         ]
 
     ##### Command Management: #####
@@ -206,7 +206,7 @@ class Bot(commands.Bot):
         if place not in self.fight_places:
             await ctx.send(f"You can't fight here")
         else:
-            wait = 10
+            wait = 30
             self.locked_players.add(name)
             self.locked_places.add(place)
             await ctx.send(f'{author} is brawling at {place} in {wait} seconds! Be there to fight or get out!')
