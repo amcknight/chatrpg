@@ -21,7 +21,6 @@
         if (typeof jsonEvent == 'undefined') {
             document.getElementById("content").innerHTML = "";
         } else {
-            console.log(jsonEvent)
             document.getElementById("content").innerHTML = battlefieldHTML(jsonEvent);
             await sleep(10000);
             shown(jsonEvent);
@@ -51,8 +50,6 @@
             },
             body: JSON.stringify(json_event)
         })
-        .then(result => result.text())
-        .then(response_response => console.log(response_response))
     }
 
     function refresh() {
