@@ -1,13 +1,12 @@
 Subject to drastic changes
 
-### Version 0.2
-- Brawl display all players and enemies
-
 ### Version 0.3
+- Fighters positioned properly
 - Players have stats
-- Brawl log displayed
+- Brawl log displayed as little movie
 - Heal at Home
 - Death brings you home
+- Fights derived algorithmically from place
 
 ## Version 0.4
 - Equipment

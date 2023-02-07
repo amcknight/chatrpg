@@ -29,16 +29,15 @@
     }
 
     function battlefieldHTML(jsonEvent) {
-        fighter_gif_template = "<img src={{ url_for('static', filename='proxy.gif') }}>";
         battlefieldLeft = "";
         for (fighter of jsonEvent['left']) {
-            battlefieldLeft += fighter_gif_template.replace("proxy.gif", fighter['gif']);
+            battlefieldLeft += "<img src="+fighter['gif']+" width=112 height=112>";
         }
         battlefieldRight = "";
         for (fighter of jsonEvent['right']) {
-            battlefieldRight += fighter_gif_template.replace("proxy.gif", fighter['gif']);
+            battlefieldLeft += "<img src="+fighter['gif']+">";
         }
-        return battlefield = "<p>" + battlefieldLeft + "</p><p>" + battlefieldRight + "</p>";
+        return battlefield = "<p>" + battlefieldLeft + "</p><br><p>" + battlefieldRight + "</p>";
     }
 
     function shown(json_event) {

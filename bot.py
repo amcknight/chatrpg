@@ -18,7 +18,7 @@ def sec():
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.1.11'
+        self.v = '0.2.00'
         self.first_message = 'HeyGuys'
         self.last_time = sec()
         self.chatters = set()
@@ -29,6 +29,7 @@ class Bot(commands.Bot):
         self.fight_places = ["garden"]
         self.locked_players = set()
         self.locked_places = set()
+        self.proxy_profile_gif = 'https://cdn.betterttv.net/emote/60d7a0028ed8b373e421a0e7/3x.webp'
 
         self.store = Store()
         try:
@@ -93,12 +94,11 @@ class Bot(commands.Bot):
         players = self.store.get_players_at(place)
         if len(players) < 1:
             raise Exception('No players in brawl! Locking failed?')
-
+        
         for player in players:
-            #TODO: Check that pic is downloaded here
             self.locked_players.add(player)
         
-        brawl = self.build_brawl(place, players)
+        brawl = await self.build_brawl(place, players)
         brawl.run()
         self.store.add_event(brawl.to_json())
         await ctx.send(f"{anded(list(map(lambda f: f.name, brawl.left)))} are brawling {anded(list(map(lambda f: f.name, brawl.right)))} in {brawl.place}!")
@@ -118,18 +118,29 @@ class Bot(commands.Bot):
         if len(shown_events) > 0:
             await ctx.send(f'{len(shown_events)} brawls revoked')
 
-    def build_brawl(self, place, players):
-        team = list(map(self.store.get_fighter, players))
+    async def build_brawl(self, place, players):
+        team = await self.generate_team(players)
         rivals = self.generate_rivals(place)
 
         return Brawl(place, team, rivals)
     
+    async def generate_team(self, players):
+        users = await self.fetch_users(players)
+        if not users: raise(f'Somehow no users fetched when fetching {anded(players)}')
+        if not len(users) == len(players): raise(f'Somehow less users than players')
+        gifs = list(map(lambda user: user.profile_image, users))
+        if not gifs: raise(f'Somehow no gifs fetched when fetching {anded(players)}')
+        if not len(gifs) == len(users): raise(f'Somehow less gifs than users')
+
+        # TODO: Something correct
+        return [Fighter(f'{player}1', player, gif, 4, 12, 5, 1, 4, 3) for (player, gif) in zip(players, gifs)]
+
     def generate_rivals(self, place):
         # TODO: Something reasonable
         return [
-            Fighter('BigCat1', 'Bigcat', 'bigcat.gif', 2, 9, 3, 1, 3, 0),
-            Fighter('Goose1', 'Goose', 'goosebrat.gif', 4, 14, 4, 1, 4, 1),
-            Fighter('BigCat2', 'Bigcat', 'bigcat.gif', 2, 9, 3, 1, 3, 0)
+            Fighter('BigCat1', 'Bigcat', 'https://cdn.betterttv.net/emote/5cc23e0012944662cfabc268/3x.webp', 2, 9, 3, 1, 3, 0),
+            Fighter('Goose1', 'Goose', 'https://cdn.betterttv.net/emote/5d898f6bd2458468c1f485a1/3x.webp', 4, 14, 4, 1, 4, 1),
+            Fighter('BigCat2', 'Bigcat', 'https://cdn.betterttv.net/emote/5cc23e0012944662cfabc268/3x.webp', 2, 9, 3, 1, 3, 0)
         ]
 
     ##### Command Management: #####
@@ -145,13 +156,13 @@ class Bot(commands.Bot):
         await ctx.send(f'{author}: Level {lvl} {job.capitalize()}. Needs {xp} XP')
 
     @commands.command()
-    async def sendhome(self, ctx):
+    async def home(self, ctx):
         author = ctx.author.name
         name = author.lower()
         if name == self.streamer:
             await self.reset(ctx)
         else:
-            await ctx.send('Only the streamer can send everyone home')
+            await ctx.send(f'Only {self.streamer} can send everyone home')
 
     @commands.command()
     async def butt(self, ctx):
@@ -206,7 +217,7 @@ class Bot(commands.Bot):
         if place not in self.fight_places:
             await ctx.send(f"You can't fight here")
         else:
-            wait = 30
+            wait = 3
             self.locked_players.add(name)
             self.locked_places.add(place)
             await ctx.send(f'{author} is brawling at {place} in {wait} seconds! Be there to fight or get out!')
@@ -269,7 +280,7 @@ class Bot(commands.Bot):
             await self.handle_commands(msg)
 
     async def event_error(self, error):
-        print(error)
+        print(f"ERROR: {error}")
         logging.error(f"Event Error: {error}")
         await self.default_channel().send(f"/me :boom: :bug: {self.streamer}")
 

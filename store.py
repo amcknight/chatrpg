@@ -91,10 +91,6 @@ class Store:
         self.redis.delete(key)
         return shown
 
-    def get_fighter(self, player):
-        # TODO: Something correct
-        return Fighter(f'{player}1', player, 'pugpls.gif', 4, 12, 5, 1, 4, 3)
-
     def send_all_home(self):
         for key in self.redis.scan_iter(f'place:*:players'):
             self.redis.delete(key.decode())

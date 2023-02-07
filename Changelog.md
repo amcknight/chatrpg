@@ -5,6 +5,7 @@
 - Fight enemies based on Location
 - Fight plumbing is in place (locking, messages to app, unlocking)
 - Streamer can clean up and send everyone home
+- Shows streamer and other fighter images
 
 ### Version 0.1
 - Connects to a stream
