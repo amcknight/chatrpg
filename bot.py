@@ -9,7 +9,7 @@ from fight.fighter import Fighter
 from store import Store
 from twitchio.ext import commands
 
-logging.basicConfig(filename='log.log', level=logging.INFO)
+logging.basicConfig(filename='log.log', level=logging.WARN)
 
 
 def sec():
@@ -18,7 +18,7 @@ def sec():
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.2.00'
+        self.v = '0.2.01'
         self.first_message = 'HeyGuys'
         self.last_time = sec()
         self.chatters = set()
@@ -217,7 +217,7 @@ class Bot(commands.Bot):
         if place not in self.fight_places:
             await ctx.send(f"You can't fight here")
         else:
-            wait = 3
+            wait = 30
             self.locked_players.add(name)
             self.locked_places.add(place)
             await ctx.send(f'{author} is brawling at {place} in {wait} seconds! Be there to fight or get out!')

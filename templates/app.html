@@ -2,6 +2,14 @@
 <head>
 </head>
 <body>
+<style>
+    #arena {
+        display: inline-grid
+    }
+    img.profilepic {
+        border-radius: 50%
+    }
+</style>
 <div id="arena">
     <div id="content"></div>
 </div>
@@ -31,13 +39,13 @@
     function battlefieldHTML(jsonEvent) {
         battlefieldLeft = "";
         for (fighter of jsonEvent['left']) {
-            battlefieldLeft += "<img src="+fighter['gif']+" width=112 height=112>";
+            battlefieldLeft += "<img class='profilepic' src="+fighter['gif']+" width=112 height=112>";
         }
         battlefieldRight = "";
         for (fighter of jsonEvent['right']) {
-            battlefieldLeft += "<img src="+fighter['gif']+">";
+            battlefieldRight += "<img src="+fighter['gif']+">";
         }
-        return battlefield = "<p>" + battlefieldLeft + "</p><br><p>" + battlefieldRight + "</p>";
+        return battlefield = "<div id='left_fighters' class='fighter_row'>" + battlefieldLeft + "</div><div id='right_fighters' class='fighter_row'>" + battlefieldRight + "</div>";
     }
 
     function shown(json_event) {
