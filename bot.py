@@ -113,6 +113,7 @@ class Bot(commands.Bot):
         if len(self.locked_players) + len(self.locked_places) > 0:
             await ctx.send(f'Unlocked {anded(list(self.locked_players) + list(self.locked_places))}')
             self.locked_players = set()
+            self.locked_places = set()
         
         shown_events = self.store.clear_shown()
         if len(shown_events) > 0:
