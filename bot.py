@@ -9,7 +9,7 @@ from fight.fighter import Fighter
 from store import Store
 from twitchio.ext import commands
 
-logging.basicConfig(filename='log.log', level=logging.WARN)
+logging.basicConfig(filename='log.log', level=logging.WARN, format='%(levelname)-7s:%(asctime)s> %(message)s', datefmt='%b-%d %H:%M:%S')
 
 
 def sec():
@@ -18,7 +18,7 @@ def sec():
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.v = '0.2.01'
+        self.v = '0.2.02'
         self.first_message = 'HeyGuys'
         self.last_time = sec()
         self.chatters = set()
@@ -247,7 +247,7 @@ class Bot(commands.Bot):
     async def event_join(self, channel, user):
         name = user.name.lower()
         if name == self.streamer:
-            await self.streamer_arrived()
+            await self.streamer_arrived(channel)
 
         if name not in self.chatters:
             self.chatters.add(name)
@@ -269,8 +269,9 @@ class Bot(commands.Bot):
         self.chatters.add(name)
         if name == self.nick.lower(): return
 
+        channel = msg.channel
         if name == self.streamer:
-            await self.streamer_arrived()
+            await self.streamer_arrived(channel)
 
         if await self.active():
             self.store.update_xp(list(self.chatters), self.since_last())
@@ -286,19 +287,19 @@ class Bot(commands.Bot):
 
     ##### Streamer and Store state management: #####
 
-    async def streamer_arrived(self):
+    async def streamer_arrived(self, channel):
         if self.streamer_here: return
         self.since_last()
         self.streamer_here = True
-        await self.default_channel().send(f"hi {self.streamer}")
+        await channel.send(f"hi {self.streamer}")
 
     async def streamer_left(self, channel):
         if not self.streamer_here: return
         if await self.active():
-            self.store.update_xp(channel)
+            self.store.update_xp(list(self.chatters), self.since_last())
         self.chatters = set()
         self.streamer_here = False
-        await self.default_channel().send(f"bye {self.streamer}")
+        await channel.send(f"bye {self.streamer}")
 
     async def active(self):
         connected = self.store.connected()
